@@ -126,10 +126,6 @@ void WinUtil::Compress01(DWORD * pSrc, DWORD * pDes, std::fstream& file,
 	}
 }
 
-/**
- * 每隔0.1秒将屏幕采集成BMP并保存在文件夹path下
- * 保存的文件名为：000.bmp -> 100.bmp
- */
 int WinUtil::SaveScreenToBmps(const char* path) {
 	HWND hWnd = GetDesktopWindow();
 	HDC hDeskDC = GetWindowDC(hWnd);
@@ -190,6 +186,68 @@ int WinUtil::SaveScreenToBmps(const char* path) {
 	return 0;
 }
 
+int WinUtil::SaveScreenToRecordFile(const char* file) {
+	HWND hWnd = GetDesktopWindow();
+	HDC hDeskDC = GetWindowDC(hWnd);
+	LPRECT lpRect = new RECT;
+	GetClientRect(hWnd, lpRect);
+	HDC hMemDC = CreateCompatibleDC(hDeskDC);
+	HBITMAP hBmp = CreateCompatibleBitmap(hDeskDC, lpRect->right - lpRect->left,
+			lpRect->bottom - lpRect->top);
+	SelectObject(hMemDC, hBmp);
+	BITMAP bitmap;
+	GetObject(hBmp, sizeof(BITMAP), &bitmap);
+
+	BITMAPINFO bmpInfo;
+	bmpInfo.bmiHeader.biBitCount = bitmap.bmBitsPixel;
+	bmpInfo.bmiHeader.biClrImportant = 0;
+	bmpInfo.bmiHeader.biCompression = 0;
+	bmpInfo.bmiHeader.biHeight = bitmap.bmHeight;
+	bmpInfo.bmiHeader.biPlanes = bitmap.bmPlanes;
+	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmpInfo.bmiHeader.biSizeImage = bitmap.bmWidthBytes * bitmap.bmHeight;
+	bmpInfo.bmiHeader.biWidth = bitmap.bmWidth;
+	bmpInfo.bmiHeader.biXPelsPerMeter = 0;
+	bmpInfo.bmiHeader.biYPelsPerMeter = 0;
+
+	DWORD size = bitmap.bmWidthBytes * bitmap.bmHeight;
+	BYTE* lpData[2];
+	lpData[0] = new BYTE[size];
+	lpData[1] = new BYTE[size];
+	memset(lpData[1], 0xFF, size);
+
+	BITMAPFILEHEADER bfh;
+	memset(&bfh, 0, sizeof(BITMAPFILEHEADER));
+	bfh.bfType = ((WORD) ('M' << 8) | 'B');
+	bfh.bfReserved1 = 0;
+	bfh.bfReserved2 = 0;
+	bfh.bfOffBits = sizeof(bmpInfo.bmiHeader) + sizeof(bfh);
+	bfh.bfSize = bfh.bfOffBits + size;
+
+	fstream fout;
+	fout.open(file, ios::binary | ios::out);
+	fout.write((char*) &bfh, sizeof(bfh));
+	fout.write((char*) &(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
+	for (int i = 0; i < 100; i++) {
+		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
+		SRCCOPY);
+		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, lpData[i % 2], &bmpInfo,
+		DIB_RGB_COLORS);
+		Compress01((DWORD*) lpData[(i + 1) % 2], (DWORD*) lpData[i % 2], fout,
+				size / 4);
+		Sleep(100);
+	}
+	fout.flush();
+	fout.close();
+
+	delete[] lpData[0];
+	delete[] lpData[1];
+	DeleteObject(hBmp);
+	DeleteObject(hMemDC);
+
+	return 0;
+}
+
 /**
  * 将文件夹下的标准BMP文件，按照顺序压缩为Record文件。
  */
@@ -229,6 +287,75 @@ int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
 	delete[] lpData[1];
 
 	fout.close();
+	return 0;
+}
+
+/**
+ * 将Record文件，解压缩为标准的AVI文件。
+ */
+int WinUtil::RecordFileToAvi(const char* avi, const char* file) {
+	std::fstream fin;
+	fin.open(file, ios::binary | ios::in);
+	BITMAPFILEHEADER bfh;
+	BITMAPINFOHEADER bmiHeader;
+	fin.read((char*) &bfh, sizeof(bfh));
+	fin.read((char*) &bmiHeader, sizeof(bmiHeader));
+
+	DWORD size = bmiHeader.biSizeImage;
+	BYTE* lpData[2];
+	lpData[0] = new BYTE[size];
+	lpData[1] = new BYTE[size];
+	memset(lpData[1], 0xFF, size);
+
+	AVISTREAMINFO strhdr;
+	PAVIFILE pfile;
+	PAVISTREAM ps;
+	PAVISTREAM pComStream;
+	AVICOMPRESSOPTIONS pCompressOption;
+	AVICOMPRESSOPTIONS FAR * opts[1] = { &pCompressOption };
+
+	AVIFileInit();
+
+	AVIFileOpen(&pfile, avi, OF_WRITE | OF_CREATE, NULL);
+	memset(&strhdr, 0, sizeof(strhdr));
+	strhdr.fccType = streamtypeVIDEO;
+	strhdr.fccHandler = 0;
+	strhdr.dwScale = 1;
+	strhdr.dwRate = 10;							//每秒钟播放10帧
+	strhdr.dwSuggestedBufferSize = bmiHeader.biSizeImage;
+	SetRect(&strhdr.rcFrame, 0, 0, bmiHeader.biWidth, bmiHeader.biHeight);
+	AVIFileCreateStream(pfile, &ps, &strhdr);
+
+	opts[0]->fccType = streamtypeVIDEO;
+	opts[0]->fccHandler = mmioStringToFOURCC("MSVC", 0);
+	opts[0]->dwQuality = 7500;
+	opts[0]->dwBytesPerSecond = 0;
+	opts[0]->dwFlags = AVICOMPRESSF_VALID || AVICOMPRESSF_KEYFRAMES;
+	opts[0]->lpFormat = 0;
+	opts[0]->cbFormat = 0;
+	opts[0]->dwInterleaveEvery = 0;
+
+	AVIMakeCompressedStream(&pComStream, ps, &pCompressOption, NULL);
+	AVIStreamSetFormat(pComStream, 0, &bmiHeader, sizeof(BITMAPINFOHEADER));
+
+	for (int i = 0; i < 100; i++) {
+		UnCompress01((DWORD*) lpData[(i + 1) % 2], fin, (DWORD*) lpData[i % 2],
+				size / 4);
+
+		AVIStreamWrite(pComStream, i, 1, (LPBYTE) lpData[i % 2],
+				bmiHeader.biSizeImage, AVIIF_KEYFRAME, NULL, NULL);
+	}
+	fin.close();
+
+	delete[] lpData[0];
+	delete[] lpData[1];
+
+	AVIStreamClose(pComStream);
+	AVIStreamClose(ps);
+	if (pfile != NULL)
+		AVIFileRelease(pfile);
+	AVIFileExit();
+
 	return 0;
 }
 
