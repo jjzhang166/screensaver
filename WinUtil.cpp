@@ -231,6 +231,13 @@ int WinUtil::SaveScreenToRecordFile(const char* file) {
 	for (int i = 0; i < 100; i++) {
 		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
 		SRCCOPY);
+
+		//获取鼠标位置,将其画在当前位置
+		POINT point;
+		GetCursorPos(&point);
+		HICON hIcon = (HICON) GetCursor();
+		DrawIcon(hMemDC, point.x, point.y, hIcon);
+
 		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, lpData[i % 2], &bmpInfo,
 		DIB_RGB_COLORS);
 		Compress01((DWORD*) lpData[(i + 1) % 2], (DWORD*) lpData[i % 2], fout,
@@ -293,7 +300,7 @@ int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
 /**
  * 将Record文件，解压缩为标准的AVI文件。
  */
-int WinUtil::RecordFileToAvi(const char* avi, const char* file) {
+int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality, DWORD dwScale, DWORD dwRate) {
 	std::fstream fin;
 	fin.open(file, ios::binary | ios::in);
 	BITMAPFILEHEADER bfh;
@@ -320,15 +327,15 @@ int WinUtil::RecordFileToAvi(const char* avi, const char* file) {
 	memset(&strhdr, 0, sizeof(strhdr));
 	strhdr.fccType = streamtypeVIDEO;
 	strhdr.fccHandler = 0;
-	strhdr.dwScale = 1;
-	strhdr.dwRate = 10;							//每秒钟播放10帧
+	strhdr.dwScale = dwScale;
+	strhdr.dwRate = dwRate;							//每秒钟播放10帧
 	strhdr.dwSuggestedBufferSize = bmiHeader.biSizeImage;
 	SetRect(&strhdr.rcFrame, 0, 0, bmiHeader.biWidth, bmiHeader.biHeight);
 	AVIFileCreateStream(pfile, &ps, &strhdr);
 
 	opts[0]->fccType = streamtypeVIDEO;
 	opts[0]->fccHandler = mmioStringToFOURCC("MSVC", 0);
-	opts[0]->dwQuality = 7500;
+	opts[0]->dwQuality = dwQuality;
 	opts[0]->dwBytesPerSecond = 0;
 	opts[0]->dwFlags = AVICOMPRESSF_VALID || AVICOMPRESSF_KEYFRAMES;
 	opts[0]->lpFormat = 0;

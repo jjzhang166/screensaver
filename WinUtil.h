@@ -48,7 +48,7 @@ public:
 	/**
 	 * 将Record文件，解压缩为标准的AVI文件。
 	 */
-	static int RecordFileToAvi(const char* avi, const char* file);
+	static int RecordFileToAvi(const char* avi, const char* filee, DWORD dwQuality, DWORD dwScale, DWORD dwRate);
 };
 
 #endif /* WINUTIL_H_ */
