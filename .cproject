@@ -34,6 +34,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.831880871" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1110023512" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/winutil/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.741227632" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -41,10 +42,12 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1933249938" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
 								<option id="gnu.cpp.link.option.paths.1086007062" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/winutil/static-debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libs}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.1276218651" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="winutil"/>
+									<listOptionValue builtIn="false" value="zdll"/>
 									<listOptionValue builtIn="false" value="vfw32"/>
 									<listOptionValue builtIn="false" value="IPHLPAPI"/>
 									<listOptionValue builtIn="false" value="getPcMsgApi"/>
@@ -110,6 +113,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.1386621817" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.614107133" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/winutil/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.399084476" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -117,6 +121,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1672589603" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
 								<option id="gnu.cpp.link.option.libs.1270699974" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="winutil"/>
+									<listOptionValue builtIn="false" value="zdll"/>
 									<listOptionValue builtIn="false" value="vfw32"/>
 									<listOptionValue builtIn="false" value="IPHLPAPI"/>
 									<listOptionValue builtIn="false" value="getPcMsgApi"/>
@@ -135,6 +140,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.600996524" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/winutil/static-release}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.160931279" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-mwindows -static" valueType="string"/>

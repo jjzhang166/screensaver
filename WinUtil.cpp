@@ -186,7 +186,7 @@ int WinUtil::SaveScreenToBmps(const char* path) {
 	return 0;
 }
 
-int WinUtil::SaveScreenToRecordFile(const char* file) {
+int WinUtil::SaveScreenToRecordFile(const char* file, DWORD count) {
 	HWND hWnd = GetDesktopWindow();
 	HDC hDeskDC = GetWindowDC(hWnd);
 	LPRECT lpRect = new RECT;
@@ -228,7 +228,7 @@ int WinUtil::SaveScreenToRecordFile(const char* file) {
 	fout.open(file, ios::binary | ios::out);
 	fout.write((char*) &bfh, sizeof(bfh));
 	fout.write((char*) &(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < count; i++) {
 		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
 		SRCCOPY);
 
@@ -300,7 +300,7 @@ int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
 /**
  * 将Record文件，解压缩为标准的AVI文件。
  */
-int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality, DWORD dwScale, DWORD dwRate) {
+int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality, DWORD dwScale, DWORD dwRate, DWORD count) {
 	std::fstream fin;
 	fin.open(file, ios::binary | ios::in);
 	BITMAPFILEHEADER bfh;
@@ -345,7 +345,7 @@ int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality,
 	AVIMakeCompressedStream(&pComStream, ps, &pCompressOption, NULL);
 	AVIStreamSetFormat(pComStream, 0, &bmiHeader, sizeof(BITMAPINFOHEADER));
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < count; i++) {
 		UnCompress01((DWORD*) lpData[(i + 1) % 2], fin, (DWORD*) lpData[i % 2],
 				size / 4);
 
@@ -366,7 +366,7 @@ int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality,
 	return 0;
 }
 
-int WinUtil::RecordFileToBmps(const char* path, const char* file) {
+int WinUtil::RecordFileToBmps(const char* path, const char* file, DWORD count) {
 	char str[128];
 	std::fstream fin;
 	sprintf(str, file);
@@ -381,7 +381,7 @@ int WinUtil::RecordFileToBmps(const char* path, const char* file) {
 	lpData[0] = new BYTE[size];
 	lpData[1] = new BYTE[size];
 	memset(lpData[1], 0xFF, size);
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < count; i++) {
 		UnCompress01((DWORD*) lpData[(i + 1) % 2], fin, (DWORD*) lpData[i % 2],
 				size / 4);
 
