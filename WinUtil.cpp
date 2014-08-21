@@ -21,12 +21,11 @@
 #define TYPE_PIXEL_SAM 2
 
 WinUtil::WinUtil() {
-	// TODO Auto-generated constructor stub
 
 }
 
 WinUtil::~WinUtil() {
-	// TODO Auto-generated destructor stub
+
 }
 
 DWORD WinUtil::UnCompress01(DWORD * pSrc, std::fstream& file, DWORD * pDes,
@@ -228,7 +227,7 @@ int WinUtil::SaveScreenToRecordFile(const char* file, DWORD count) {
 	fout.open(file, ios::binary | ios::out);
 	fout.write((char*) &bfh, sizeof(bfh));
 	fout.write((char*) &(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
 		SRCCOPY);
 
@@ -262,7 +261,7 @@ int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
 	BITMAPFILEHEADER bfh;
 	BITMAPINFOHEADER bmiHeader;
 	BYTE* lpData[2];
-	DWORD size;
+	DWORD size = 0;
 
 	char str[128];
 	fstream fout;
@@ -345,7 +344,7 @@ int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality,
 	AVIMakeCompressedStream(&pComStream, ps, &pCompressOption, NULL);
 	AVIStreamSetFormat(pComStream, 0, &bmiHeader, sizeof(BITMAPINFOHEADER));
 
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		UnCompress01((DWORD*) lpData[(i + 1) % 2], fin, (DWORD*) lpData[i % 2],
 				size / 4);
 
@@ -381,7 +380,7 @@ int WinUtil::RecordFileToBmps(const char* path, const char* file, DWORD count) {
 	lpData[0] = new BYTE[size];
 	lpData[1] = new BYTE[size];
 	memset(lpData[1], 0xFF, size);
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		UnCompress01((DWORD*) lpData[(i + 1) % 2], fin, (DWORD*) lpData[i % 2],
 				size / 4);
 
