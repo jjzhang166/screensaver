@@ -37,6 +37,11 @@ public:
 	/**
 	 * 每隔0.1秒将屏幕采集成BMP并保存在file中
 	 */
+	static int RecordScreenToFile(const char* file, DWORD count);
+
+	/**
+	 * 每隔0.1秒将屏幕采集成BMP并保存在file中
+	 */
 	static int SaveScreenToRecordFile(const char* file, DWORD count);
 
 	/**
