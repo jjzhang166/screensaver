@@ -237,8 +237,9 @@ int WinUtil::SaveScreenToRecordFile(const char* file, DWORD count) {
 		HICON hIcon = (HICON) GetCursor();
 		DrawIcon(hMemDC, point.x, point.y, hIcon);
 
-		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, lpData[i % 2], &bmpInfo,
-		DIB_RGB_COLORS);
+		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, lpData[i % 2],
+				&bmpInfo,
+				DIB_RGB_COLORS);
 		Compress01((DWORD*) lpData[(i + 1) % 2], (DWORD*) lpData[i % 2], fout,
 				size / 4);
 		Sleep(100);
@@ -299,7 +300,8 @@ int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
 /**
  * 将Record文件，解压缩为标准的AVI文件。
  */
-int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality, DWORD dwScale, DWORD dwRate, DWORD count) {
+int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality,
+		DWORD dwScale, DWORD dwRate, DWORD count) {
 	std::fstream fin;
 	fin.open(file, ios::binary | ios::in);
 	BITMAPFILEHEADER bfh;
@@ -401,114 +403,7 @@ int WinUtil::RecordFileToBmps(const char* path, const char* file, DWORD count) {
 	return 0;
 }
 
-int WinUtil::PlayScreen(const char* file) {
-	char str[128];
-	std::fstream fin;
-	sprintf(str, file);
-	fin.open(str, ios::binary | ios::in);
-	BITMAPFILEHEADER bfh;
-	BITMAPINFOHEADER bmiHeader;
-	fin.read((char*) &bfh, sizeof(bfh));
-	fin.read((char*) &bmiHeader, sizeof(bmiHeader));
-
-	DWORD size = bmiHeader.biSizeImage;
-	BYTE* lpData[2];
-	lpData[0] = new BYTE[size];
-	lpData[1] = new BYTE[size];
-	BYTE *pIn = new BYTE[size];
-	BYTE *pUn = new BYTE[size];
-	memset(lpData[1], 0, size);
-	for (int i = 0; i < 100; i++) {
-		fin.read((char*) pIn, size);
-		fin.read((char*) pUn, size);
-		//UnCompress(lpData[(i + 1) % 2], pIn, lpData[i % 2], pUn, size);
-
-		char str[128];
-		std::fstream fout;
-		sprintf(str, "Z:/Downloads/out/o%03d.bmp", i);
-		fout.open(str, ios::binary | ios::out);
-//		fout.write((char*) &bfh, sizeof(bfh));
-//		fout.write((char*) &bmiHeader, sizeof(bmiHeader));
-		//fout.write((char*) lpData[i % 2], size);
-		fout.write((char*) lpData[i % 2], size);
-		fout.close();
-	}
-	fin.close();
-
-	delete[] lpData[0];
-	delete[] lpData[1];
-
-	return 0;
-}
-
-int WinUtil::RecordScreen(const char* file) {
-	HWND hWnd = GetDesktopWindow();
-	HDC hDeskDC = GetWindowDC(hWnd);
-	LPRECT lpRect = new RECT;
-	GetClientRect(hWnd, lpRect);
-	HDC hMemDC = CreateCompatibleDC(hDeskDC);
-	HBITMAP hBmp = CreateCompatibleBitmap(hDeskDC, lpRect->right - lpRect->left,
-			lpRect->bottom - lpRect->top);
-	SelectObject(hMemDC, hBmp);
-	BITMAP bitmap;
-	GetObject(hBmp, sizeof(BITMAP), &bitmap);
-
-	BITMAPINFO bmpInfo;
-	bmpInfo.bmiHeader.biBitCount = bitmap.bmBitsPixel;
-	bmpInfo.bmiHeader.biClrImportant = 0;
-	bmpInfo.bmiHeader.biCompression = 0;
-	bmpInfo.bmiHeader.biHeight = bitmap.bmHeight;
-	bmpInfo.bmiHeader.biPlanes = bitmap.bmPlanes;
-	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmpInfo.bmiHeader.biSizeImage = bitmap.bmWidthBytes * bitmap.bmHeight;
-	bmpInfo.bmiHeader.biWidth = bitmap.bmWidth;
-	bmpInfo.bmiHeader.biXPelsPerMeter = 0;
-	bmpInfo.bmiHeader.biYPelsPerMeter = 0;
-
-	DWORD size = bitmap.bmWidthBytes * bitmap.bmHeight;
-	BYTE* lpData[2];
-	lpData[0] = new BYTE[size];
-	lpData[1] = new BYTE[size];
-	memset(lpData[1], 0, size);
-
-	BITMAPFILEHEADER bfh;
-	memset(&bfh, 0, sizeof(BITMAPFILEHEADER));
-	bfh.bfType = ((WORD) ('M' << 8) | 'B');
-	bfh.bfReserved1 = 0;
-	bfh.bfReserved2 = 0;
-	bfh.bfOffBits = sizeof(bmpInfo.bmiHeader) + sizeof(bfh);
-	bfh.bfSize = bfh.bfOffBits + size;
-
-	char str[128];
-	fstream fout;
-	sprintf(str, file);
-	fout.open(str, ios::binary | ios::out);
-	fout.write((char*) &bfh, sizeof(bfh));
-	for (int i = 0; i < 100; i++) {
-		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
-		SRCCOPY);
-		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, lpData[i % 2],
-				&bmpInfo,
-				DIB_RGB_COLORS);
-		if (i == 0) {
-			fout.write((char*) &(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
-		}
-		Compress01((DWORD*) lpData[(i + 1) % 2], (DWORD*) lpData[i % 2], fout,
-				size / 4);
-		Sleep(100);
-	}
-	fout.flush();
-	fout.close();
-
-	delete[] lpData[0];
-	delete[] lpData[1];
-	DeleteObject(hBmp);
-	DeleteObject(hMemDC);
-
-	return 0;
-}
-
-int WinUtil::Create() {
+int WinUtil::SaveScreenToAvi(const char* file, DWORD count) {
 
 	AVISTREAMINFO strhdr;
 	PAVIFILE pfile;
@@ -520,7 +415,7 @@ int WinUtil::Create() {
 
 	AVIFileInit();
 
-	for (int i = 0; i < 100; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		HWND hWnd = GetDesktopWindow();
 		HDC hDeskDC = GetWindowDC(hWnd); //获取桌面画布对象
 		LPRECT lpRect = new RECT;
@@ -561,7 +456,7 @@ int WinUtil::Create() {
 		DIB_RGB_COLORS);
 
 		if (nFrames == 0) {
-			AVIFileOpen(&pfile, "avi.avi", OF_WRITE | OF_CREATE, NULL);
+			AVIFileOpen(&pfile, file, OF_WRITE | OF_CREATE, NULL);
 			memset(&strhdr, 0, sizeof(strhdr));
 			strhdr.fccType = streamtypeVIDEO;
 			strhdr.fccHandler = 0;
