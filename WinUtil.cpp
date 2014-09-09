@@ -230,13 +230,10 @@ int WinUtil::RecordScreenToFile(const char* file, DWORD count) {
 		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
 		SRCCOPY);
 
-		//获取鼠标位置,将其画在当前位置
+		//获取鼠标位置
 		POINT point;
 		GetCursorPos(&point);
-
-//		HICON hIcon = (HICON) GetCursor();
-//		DrawIcon(hMemDC, point.x, point.y, hIcon);
-
+		c.WriteCursor(point.x, point.y);
 
 		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, frame,
 				&bmpInfo,

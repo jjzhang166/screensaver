@@ -8,14 +8,9 @@
 #ifndef COMPRESSER_H_
 #define COMPRESSER_H_
 
-#include <fstream>
+#include "IProcessor.h"
 
-class Compresser {
-private:
-	unsigned int w;//¿í¶È
-	unsigned int h;//¸ß¶È
-	std::fstream fout;
-	unsigned char* lpData[2];
+class Compresser : public IProcessor {
 
 public:
 	Compresser(unsigned int w, unsigned int h);

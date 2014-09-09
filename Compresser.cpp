@@ -16,9 +16,7 @@
 #define TYPE_PIXEL_SAM 2
 #define TYPE_CURSOR    3
 
-Compresser::Compresser(unsigned int w, unsigned int h) {
-	this->w = w;
-	this->h = h;
+Compresser::Compresser(unsigned int w, unsigned int h) : IProcessor(w, h) {
 }
 
 Compresser::~Compresser() {
