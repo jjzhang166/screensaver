@@ -15,8 +15,7 @@ public:
 	IProcessor(const char* file);
 	virtual ~IProcessor();
 
-	void SetSize(unsigned int w, unsigned int h);
-	virtual void* Open() = 0;
+	virtual void* Open(unsigned int w, unsigned int h) = 0;
 	virtual void Write(void* data, unsigned int size) = 0;
 	virtual void WriteCursor(long x, long y) = 0;
 	virtual void* WriteFrame(void* frame) = 0;

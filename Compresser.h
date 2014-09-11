@@ -17,7 +17,7 @@ public:
 
 	virtual ~Compresser();
 
-	virtual void* Open();
+	virtual void* Open(unsigned int w, unsigned int h);
 	virtual void Write(void* data, unsigned int size);
 	virtual void WriteCursor(long x, long y);
 	virtual void* WriteFrame(void* frame);

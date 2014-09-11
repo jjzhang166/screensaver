@@ -91,7 +91,9 @@ static void Compress01(DWORD * pSrc, DWORD * pDes, std::fstream& file,
 	}
 }
 
-void* Compresser::Open() {
+void* Compresser::Open(unsigned int w, unsigned int h) {
+	this->w = w;
+	this->h = h;
 	lpData[0] = new unsigned char[w * h * 4];
 	lpData[1] = new unsigned char[w * h * 4];
 	memset(lpData[1], 0xFF, w * h * 4);

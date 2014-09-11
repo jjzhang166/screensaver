@@ -14,11 +14,6 @@ IProcessor::IProcessor(const char* file) : w(0), h(0) {
 	}
 }
 
-void IProcessor::SetSize(unsigned int w, unsigned int h) {
-	this->w = w;
-	this->h = h;
-}
-
 IProcessor::~IProcessor() {
 }
 

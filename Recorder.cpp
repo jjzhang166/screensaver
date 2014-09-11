@@ -46,8 +46,7 @@ void Recorder::Run() {
 
 	DWORD size = bitmap.bmWidthBytes * bitmap.bmHeight;
 
-	processor->SetSize(bitmap.bmWidth, bitmap.bmHeight);
-	void* frame = processor->Open();
+	void* frame = processor->Open(bitmap.bmWidth, bitmap.bmHeight);
 
 	BITMAPFILEHEADER bfh;
 	memset(&bfh, 0, sizeof(BITMAPFILEHEADER));
@@ -72,7 +71,7 @@ void Recorder::Run() {
 		SRCCOPY);
 
 		GetCursorPos(&point);
-		if (point != lastp) {
+		if (point.x != lastp.x || point.y  != lastp.y) {
 			processor->WriteCursor(point.x, point.y);
 			lastp = point;
 		}
