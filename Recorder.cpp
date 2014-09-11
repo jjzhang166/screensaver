@@ -59,14 +59,23 @@ void Recorder::Run() {
 
 	processor->Write(&bfh, sizeof(bfh));
 	processor->Write(&(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
+
+	//获取鼠标位置
+	POINT point;
+	POINT lastp;
+	GetCursorPos(&point);
+	processor->WriteCursor(point.x, point.y);
+	lastp = point;
+
 	while (running) {
 		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
 		SRCCOPY);
 
-		//获取鼠标位置
-		POINT point;
 		GetCursorPos(&point);
-		processor->WriteCursor(point.x, point.y);
+		if (point != lastp) {
+			processor->WriteCursor(point.x, point.y);
+			lastp = point;
+		}
 
 		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, frame,
 				&bmpInfo,
