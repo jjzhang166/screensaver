@@ -16,11 +16,15 @@
 #include <vfw.h>
 #include <fstream>
 
+#include "Recorder.h"
+#include "Compresser.h"
+
 #include "Compresser.h"
 
 #define TYPE_PIXEL_CPY 0
 #define TYPE_PIXEL_OLD 1
 #define TYPE_PIXEL_SAM 2
+#define TYPE_CURSOR    3
 
 WinUtil::WinUtil() {
 
@@ -36,15 +40,22 @@ DWORD WinUtil::UnCompress01(DWORD * pSrc, std::fstream& file, DWORD * pDes,
 	DWORD len = 0;
 	DWORD cur = 0;
 	while (cur != size) {
+		len = 0;
 		file.read((char*) &type, sizeof(type));
-		file.read((char*) &len, sizeof(len));
-		if (type == TYPE_PIXEL_OLD) {
+		if (type == TYPE_CURSOR) {
+			file.read((char*) &type, sizeof(type));
+			file.read((char*) &type, sizeof(type));
+			continue;
+		} else if (type == TYPE_PIXEL_OLD) {
+			file.read((char*) &len, sizeof(len));
 			//与上一幅画面相同的像素
 			memcpy(pDes + cur, pSrc + cur, len * 4);
 		} else if (type == TYPE_PIXEL_CPY) {
+			file.read((char*) &len, sizeof(len));
 			//变化的且与以前不同的像素
 			file.read((char*) (pDes + cur), len * 4);
 		} else if (type == TYPE_PIXEL_SAM) {
+			file.read((char*) &len, sizeof(len));
 			//同一个像素
 			file.read((char*) &type, sizeof(type));
 			for (DWORD i = 0; i < len; i++) {
@@ -187,65 +198,13 @@ int WinUtil::SaveScreenToBmps(const char* path) {
 	return 0;
 }
 
-int WinUtil::RecordScreenToFile(const char* file, DWORD count) {
-	HWND hWnd = GetDesktopWindow();
-	HDC hDeskDC = GetWindowDC(hWnd);
-	LPRECT lpRect = new RECT;
-	GetClientRect(hWnd, lpRect);
-	HDC hMemDC = CreateCompatibleDC(hDeskDC);
-	HBITMAP hBmp = CreateCompatibleBitmap(hDeskDC, lpRect->right - lpRect->left,
-			lpRect->bottom - lpRect->top);
-	SelectObject(hMemDC, hBmp);
-	BITMAP bitmap;
-	GetObject(hBmp, sizeof(BITMAP), &bitmap);
-
-	BITMAPINFO bmpInfo;
-	bmpInfo.bmiHeader.biBitCount = bitmap.bmBitsPixel;
-	bmpInfo.bmiHeader.biClrImportant = 0;
-	bmpInfo.bmiHeader.biCompression = 0;
-	bmpInfo.bmiHeader.biHeight = bitmap.bmHeight;
-	bmpInfo.bmiHeader.biPlanes = bitmap.bmPlanes;
-	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmpInfo.bmiHeader.biSizeImage = bitmap.bmWidthBytes * bitmap.bmHeight;
-	bmpInfo.bmiHeader.biWidth = bitmap.bmWidth;
-	bmpInfo.bmiHeader.biXPelsPerMeter = 0;
-	bmpInfo.bmiHeader.biYPelsPerMeter = 0;
-
-	DWORD size = bitmap.bmWidthBytes * bitmap.bmHeight;
-
-	Compresser c(bitmap.bmWidth, bitmap.bmHeight);
-	void* frame = c.Open(file);
-
-	BITMAPFILEHEADER bfh;
-	memset(&bfh, 0, sizeof(BITMAPFILEHEADER));
-	bfh.bfType = ((WORD) ('M' << 8) | 'B');
-	bfh.bfReserved1 = 0;
-	bfh.bfReserved2 = 0;
-	bfh.bfOffBits = sizeof(bmpInfo.bmiHeader) + sizeof(bfh);
-	bfh.bfSize = bfh.bfOffBits + size;
-
-	c.Write(&bfh, sizeof(bfh));
-	c.Write(&(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
-	for (unsigned int i = 0; i < count; i++) {
-		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
-		SRCCOPY);
-
-		//获取鼠标位置
-		POINT point;
-		GetCursorPos(&point);
-		c.WriteCursor(point.x, point.y);
-
-		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, frame,
-				&bmpInfo,
-				DIB_RGB_COLORS);
-		frame = c.WriteFrame(frame);
-		Sleep(100);
-	}
-
-	c.Close(frame);
-	DeleteObject(hBmp);
-	DeleteObject(hMemDC);
-
+int WinUtil::RecordScreenToFile(const char* file, DWORD time) {
+	Compresser c(file);
+	Recorder r(&c);
+	ThreadCreator::StartThread(&r);
+	Sleep(time);
+	r.Stop();
+	Sleep(5*1000);
 	return 0;
 }
 

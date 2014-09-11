@@ -12,10 +12,11 @@
 
 class IProcessor {
 public:
-	IProcessor(unsigned int w, unsigned int h);
+	IProcessor(const char* file);
 	virtual ~IProcessor();
 
-	virtual void* Open(const char* file) = 0;
+	void SetSize(unsigned int w, unsigned int h);
+	virtual void* Open() = 0;
 	virtual void Write(void* data, unsigned int size) = 0;
 	virtual void WriteCursor(long x, long y) = 0;
 	virtual void* WriteFrame(void* frame) = 0;
@@ -24,6 +25,7 @@ public:
 protected:
 	unsigned int w;//¿í¶È
 	unsigned int h;//¸ß¶È
+	char file[256];
 	std::fstream fout;
 	unsigned char* lpData[2];
 

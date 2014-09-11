@@ -16,7 +16,7 @@
 #define TYPE_PIXEL_SAM 2
 #define TYPE_CURSOR    3
 
-Compresser::Compresser(unsigned int w, unsigned int h) : IProcessor(w, h) {
+Compresser::Compresser(const char* file) : IProcessor(file) {
 }
 
 Compresser::~Compresser() {
@@ -91,7 +91,7 @@ static void Compress01(DWORD * pSrc, DWORD * pDes, std::fstream& file,
 	}
 }
 
-void* Compresser::Open(const char* file) {
+void* Compresser::Open() {
 	lpData[0] = new unsigned char[w * h * 4];
 	lpData[1] = new unsigned char[w * h * 4];
 	memset(lpData[1], 0xFF, w * h * 4);

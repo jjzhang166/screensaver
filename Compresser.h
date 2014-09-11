@@ -13,11 +13,11 @@
 class Compresser : public IProcessor {
 
 public:
-	Compresser(unsigned int w, unsigned int h);
+	Compresser(const char* file);
 
 	virtual ~Compresser();
 
-	virtual void* Open(const char* file);
+	virtual void* Open();
 	virtual void Write(void* data, unsigned int size);
 	virtual void WriteCursor(long x, long y);
 	virtual void* WriteFrame(void* frame);
