@@ -27,10 +27,6 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show) {
 		return WinUtil::RecordScreenToFile(
 				prop.Get("rec", BMPS_RECORD).c_str(),
 				prop.GetInteger("count", 10));
-	} else if (type == "SaveScreenToRecordFile") {
-		return WinUtil::SaveScreenToRecordFile(
-				prop.Get("rec", BMPS_RECORD).c_str(),
-				prop.GetInteger("count", 1000));
 	} else if (type == "SaveScreenToBmps") {
 		Util::EnsureDir(prop.Get("dir", BMPS_DIR));
 		return WinUtil::SaveScreenToBmps(prop.Get("dir", BMPS_DIR).c_str());
@@ -41,14 +37,12 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show) {
 	} else if (type == "RecordFileToBmps") {
 		Util::EnsureDir(prop.Get("dir", BMPS_DIR));
 		return WinUtil::RecordFileToBmps(prop.Get("dir", BMPS_DIR).c_str(),
-				prop.Get("rec", BMPS_RECORD).c_str(),
-				prop.GetInteger("count", 10));
+				prop.Get("rec", BMPS_RECORD).c_str());
 	} else if (type == "RecordFileToAvi") {
 		return WinUtil::RecordFileToAvi(prop.Get("avi", BMPS_AVI).c_str(),
 				prop.Get("rec", BMPS_RECORD).c_str(),
 				prop.GetInteger("quality", 7500), prop.GetInteger("scale", 1),
-				prop.GetInteger("rate", 10),
-				prop.GetInteger("count", 1000));
+				prop.GetInteger("rate", 10));
 	}
 
 	return 0;

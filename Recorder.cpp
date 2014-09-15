@@ -12,8 +12,8 @@
 #include <iostream>
 #include <fstream>
 
-Recorder::Recorder(IProcessor* processor) : running(false) {
-	this->processor = processor;
+Recorder::Recorder(IWriter* writer) : running(false) {
+	this->writer = writer;
 }
 
 Recorder::~Recorder() {
@@ -46,7 +46,7 @@ void Recorder::Run() {
 
 	DWORD size = bitmap.bmWidthBytes * bitmap.bmHeight;
 
-	void* frame = processor->Open(bitmap.bmWidth, bitmap.bmHeight);
+	Frame* frame = writer->Open(bitmap.bmWidth, bitmap.bmHeight);
 
 	BITMAPFILEHEADER bfh;
 	memset(&bfh, 0, sizeof(BITMAPFILEHEADER));
@@ -56,34 +56,26 @@ void Recorder::Run() {
 	bfh.bfOffBits = sizeof(bmpInfo.bmiHeader) + sizeof(bfh);
 	bfh.bfSize = bfh.bfOffBits + size;
 
-	processor->Write(&bfh, sizeof(bfh));
-	processor->Write(&(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
-
-	//获取鼠标位置
-	POINT point;
-	POINT lastp;
-	GetCursorPos(&point);
-	processor->WriteCursor(point.x, point.y);
-	lastp = point;
+	writer->Write(&bfh, sizeof(bfh));
+	writer->Write(&(bmpInfo.bmiHeader), sizeof(bmpInfo.bmiHeader));
 
 	while (running) {
 		BitBlt(hMemDC, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hDeskDC, 0, 0,
 		SRCCOPY);
 
+		POINT point;
 		GetCursorPos(&point);
-		if (point.x != lastp.x || point.y  != lastp.y) {
-			processor->WriteCursor(point.x, point.y);
-			lastp = point;
-		}
+		frame->x = point.x;
+		frame->y = point.y;
 
-		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, frame,
+		GetDIBits(hMemDC, hBmp, 0, bmpInfo.bmiHeader.biHeight, frame->frame,
 				&bmpInfo,
 				DIB_RGB_COLORS);
-		frame = processor->WriteFrame(frame);
+		frame = writer->WriteFrame(frame);
 		Sleep(100);
 	}
 
-	processor->Close(frame);
+	writer->Close();
 	DeleteObject(hBmp);
 	DeleteObject(hMemDC);
 

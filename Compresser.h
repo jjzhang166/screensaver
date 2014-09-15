@@ -8,20 +8,19 @@
 #ifndef COMPRESSER_H_
 #define COMPRESSER_H_
 
-#include "IProcessor.h"
+#include "IWriter.h"
 
-class Compresser : public IProcessor {
+class Compresser : public IWriter {
 
 public:
 	Compresser(const char* file);
 
 	virtual ~Compresser();
 
-	virtual void* Open(unsigned int w, unsigned int h);
+	virtual Frame* Open(unsigned int w, unsigned int h);
 	virtual void Write(void* data, unsigned int size);
-	virtual void WriteCursor(long x, long y);
-	virtual void* WriteFrame(void* frame);
-	virtual void Close(void* frame);
+	virtual Frame* WriteFrame(Frame* frame);
+	virtual void Close();
 };
 
 #endif /* COMPRESSER_H_ */

@@ -9,16 +9,16 @@
 #define RECORDER_H_
 
 #include <cpputils/Runnable.h>
-#include "IProcessor.h"
+#include "IWriter.h"
 
 class Recorder : public Runnable {
 protected:
 	bool running;
 	char file[256];
-	IProcessor* processor;
+	IWriter* writer;
 
 public:
-	Recorder(IProcessor* processor);
+	Recorder(IWriter* writer);
 	virtual ~Recorder();
 
 	void Run();

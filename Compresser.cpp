@@ -16,7 +16,7 @@
 #define TYPE_PIXEL_SAM 2
 #define TYPE_CURSOR    3
 
-Compresser::Compresser(const char* file) : IProcessor(file) {
+Compresser::Compresser(const char* file) : IWriter(file) {
 }
 
 Compresser::~Compresser() {
@@ -91,41 +91,42 @@ static void Compress01(DWORD * pSrc, DWORD * pDes, std::fstream& file,
 	}
 }
 
-void* Compresser::Open(unsigned int w, unsigned int h) {
+Frame* Compresser::Open(unsigned int w, unsigned int h) {
 	this->w = w;
 	this->h = h;
-	lpData[0] = new unsigned char[w * h * 4];
-	lpData[1] = new unsigned char[w * h * 4];
-	memset(lpData[1], 0xFF, w * h * 4);
+	frames[0].frame = new unsigned char[w * h * 4];
+	frames[1].frame = new unsigned char[w * h * 4];
+	memset(frames[1].frame, 0xFF, w * h * 4);
 
 	fout.open(file, std::ios::binary | std::ios::out);
-	return lpData[0];
-}
-
-void Compresser::WriteCursor(long x, long y) {
-	DWORD t = TYPE_CURSOR;
-	fout.write((char*)&t, sizeof(t));
-	fout.write((char*)&x, sizeof(x));
-	fout.write((char*)&y, sizeof(y));
+	return &(frames[0]);
 }
 
 void Compresser::Write(void* data, unsigned int size) {
 	fout.write((char*)data, size);
 }
 
-void* Compresser::WriteFrame(void* frame) {
-	void * prev;
-	if (frame == lpData[0])
-		prev = lpData[1];
+Frame* Compresser::WriteFrame(Frame* f) {
+	Frame* prev;
+	if (f == &(frames[0]))
+		prev = &(frames[1]);
 	else
-		prev = lpData[0];
+		prev = &(frames[0]);
 
-	Compress01((DWORD*) prev, (DWORD*) frame, fout,
+	DWORD t = TYPE_CURSOR;
+	fout.write((char*)&t, sizeof(t));
+	fout.write((char*)&f->x, sizeof(f->x));
+	fout.write((char*)&f->y, sizeof(f->y));
+	fout.write((char*)&f->type, sizeof(f->type));
+
+	Compress01((DWORD*) prev->frame, (DWORD*) f->frame, fout,
 			w * h);
+
 	return prev;
 }
 
-void Compresser::Close(void* frame) {
-	delete[] (char*) frame;
+void Compresser::Close() {
+	delete frames[0].frame;
+	delete frames[1].frame;
 	fout.close();
 }
