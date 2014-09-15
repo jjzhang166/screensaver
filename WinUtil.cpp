@@ -107,41 +107,33 @@ int WinUtil::RecordScreenToFile(const char* file, DWORD time) {
  * 将文件夹下的标准BMP文件，按照顺序压缩为Record文件。
  */
 int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
-	BITMAPFILEHEADER bfh;
-	BITMAPINFOHEADER bmiHeader;
-	BYTE* lpData[2];
-	DWORD size = 0;
-
-	char str[128];
-	fstream fout;
-	sprintf(str, file);
-	fout.open(str, ios::binary | ios::out);
-	for (int i = 0; i < 100; i++) {
+	BMPHEADER bh;
+	Frame* frame = NULL;
+	Compresser* writer = new Compresser(file);
+	char str[256];
+	int i = 0;
+	while (true) {
 		fstream fin;
 		sprintf(str, "%s/%03d.bmp", path, i);
 		fin.open(str, ios::binary | ios::in);
-		fin.read((char*) &bfh, sizeof(bfh));
-		fin.read((char*) &(bmiHeader), sizeof(bmiHeader));
-		if (i == 0) {
-			fout.write((char*) &bfh, sizeof(bfh));
-			fout.write((char*) &bmiHeader, sizeof(bmiHeader));
-			size = bmiHeader.biSizeImage;
-			lpData[0] = new BYTE[size];
-			lpData[1] = new BYTE[size];
-			memset(lpData[1], 0xFF, size);
+		if (!fin) {
+			break;
 		}
-		fin.read((char*) lpData[i % 2], size);
+		fin.read((char*) &bh, sizeof(bh));
+		if (i == 0) {
+			frame = writer->Open(bh.info.biWidth, bh.info.biHeight);
+			writer->Write(&bh, sizeof(bh));
+		}
+		fin.read((char*) (frame->frame), bh.info.biSizeImage);
 
-//		Compress01((DWORD*) lpData[(i + 1) % 2], (DWORD*) lpData[i % 2], fout,
-//				size / 4);
+		frame = writer->WriteFrame(frame);
 
 		fin.close();
+		i++;
 	}
 
-	delete[] lpData[0];
-	delete[] lpData[1];
-
-	fout.close();
+	writer->Close();
+	delete writer;
 	return 0;
 }
 
