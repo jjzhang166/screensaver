@@ -1,3 +1,1 @@
-
-
-screensaver type=SaveScreenToRecordFile rec=bmps.rec count=1000
+screensaver type=RecordScreenToFile rec=bmps.rec count=300000

@@ -137,13 +137,24 @@ int WinUtil::BmpsToRecordFile(const char* path, const char* file) {
 	return 0;
 }
 
+int inf(FILE *source, FILE *dest);
 /**
  * 将Record文件，解压缩为标准的AVI文件。
  */
 int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality,
 		DWORD dwScale, DWORD dwRate) {
+
+	char tmp[1024];
+	sprintf(tmp, "%s.tmp", file);
+
+	FILE* filei = fopen(file, "rb");
+	FILE* fileo = fopen(tmp, "wb");
+	inf(filei, fileo);
+	fclose(filei);
+	fclose(fileo);
+
 	Uncompresser uc;
-	PBMPHEADER ph = uc.Open(file);
+	PBMPHEADER ph = uc.Open(tmp);
 	Frame* frame = NULL;
 
 	AVISTREAMINFO strhdr;
@@ -190,6 +201,8 @@ int WinUtil::RecordFileToAvi(const char* avi, const char* file, DWORD dwQuality,
 	if (pfile != NULL)
 		AVIFileRelease(pfile);
 	AVIFileExit();
+
+	Util::DeleteFile1(tmp);
 
 	return 0;
 }

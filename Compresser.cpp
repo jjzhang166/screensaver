@@ -46,16 +46,16 @@ static DWORD same_new(DWORD * pDes, DWORD max) {
 	return len;
 }
 
-static void writeto(std::fstream& file, DWORD type, DWORD size, DWORD *data,
+static void writeto(FileCompressStream& file, DWORD type, DWORD size, DWORD *data,
 		DWORD len) {
-	file.write((char*) &type, 4);
-	file.write((char*) &size, 4);
+	file.Write((unsigned char*) &type, 4);
+	file.Write((unsigned char*) &size, 4);
 	if (len > 0) {
-		file.write((char*) data, len * sizeof(DWORD));
+		file.Write((unsigned char*) data, len * sizeof(DWORD));
 	}
 }
 
-static void Compress01(DWORD * pSrc, DWORD * pDes, std::fstream& file,
+static void Compress01(DWORD * pSrc, DWORD * pDes, FileCompressStream& file,
 		DWORD size) {
 	DWORD copyLeng = 0;
 	DWORD current = 0;
@@ -98,12 +98,12 @@ Frame* Compresser::Open(unsigned int w, unsigned int h) {
 	frames[1].frame = new unsigned char[w * h * 4];
 	memset(frames[1].frame, 0xFF, w * h * 4);
 
-	fout.open(file, std::ios::binary | std::ios::out);
+	fout.Open(file, Z_DEFAULT_COMPRESSION);
 	return &(frames[0]);
 }
 
 void Compresser::Write(void* data, unsigned int size) {
-	fout.write((char*)data, size);
+	fout.Write((unsigned char*)data, size);
 }
 
 Frame* Compresser::WriteFrame(Frame* f) {
@@ -114,10 +114,10 @@ Frame* Compresser::WriteFrame(Frame* f) {
 		prev = &(frames[0]);
 
 	DWORD t = TYPE_CURSOR;
-	fout.write((char*)&t, sizeof(t));
-	fout.write((char*)&f->x, sizeof(f->x));
-	fout.write((char*)&f->y, sizeof(f->y));
-	fout.write((char*)&f->type, sizeof(f->type));
+	fout.Write((unsigned char*)&t, sizeof(t));
+	fout.Write((unsigned char*)&f->x, sizeof(f->x));
+	fout.Write((unsigned char*)&f->y, sizeof(f->y));
+	fout.Write((unsigned char*)&f->type, sizeof(f->type));
 
 	Compress01((DWORD*) prev->frame, (DWORD*) f->frame, fout,
 			w * h);
@@ -128,5 +128,5 @@ Frame* Compresser::WriteFrame(Frame* f) {
 void Compresser::Close() {
 	delete frames[0].frame;
 	delete frames[1].frame;
-	fout.close();
+	fout.Close();
 }

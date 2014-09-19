@@ -8,7 +8,6 @@
 #ifndef IWRITER_H_
 #define IWRITER_H_
 
-#include <fstream>
 #include "Frame.h"
 
 class IWriter {
@@ -25,7 +24,6 @@ protected:
 	unsigned int w;//¿í¶È
 	unsigned int h;//¸ß¶È
 	char file[256];
-	std::fstream fout;
 	Frame frames[2];
 };
 

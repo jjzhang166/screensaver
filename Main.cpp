@@ -10,12 +10,21 @@
 #include <cpputils/Configure.h>
 #include "WinUtil.h"
 #include <cpputils/Util.h>
+#include "include/zconf.h"
+#include "include/zlib.h"
 
 #define DIR "."
 
 const char* BMPS_DIR = DIR "/bmps";
 const char* BMPS_RECORD = DIR "/bmps.rec";
 const char* BMPS_AVI = DIR "/bmps.avi";
+
+int test1();
+int test();
+int WINAPI WinMain2(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show) {
+	test1();
+	return test();
+}
 
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show) {
 	Properties prop;

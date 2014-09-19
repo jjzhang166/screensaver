@@ -8,6 +8,7 @@
 #ifndef COMPRESSER_H_
 #define COMPRESSER_H_
 
+#include "FileCompressStream.h"
 #include "IWriter.h"
 
 class Compresser : public IWriter {
@@ -21,6 +22,9 @@ public:
 	virtual void Write(void* data, unsigned int size);
 	virtual Frame* WriteFrame(Frame* frame);
 	virtual void Close();
+
+private:
+	FileCompressStream fout;
 };
 
 #endif /* COMPRESSER_H_ */
